@@ -1,24 +1,21 @@
+import copy
 import datetime
-import streamlit as st
 import numpy as np
 import pandas as pd
-from snowflake.snowpark.context import get_active_session
 import plotly.express as px
 import plotly.graph_objects as go
-import altair as alt
+import streamlit as st
 import time
-import copy
 
-# Write directly to the app
-st.title("Cost Per Closing")
 
-# Connect to Snowflake
 conn = st.connection("snowflake")
+
 
 # @st.cache_data
 def load_session():
     session = conn.session()
     return session
+
 
 session = load_session()
 
@@ -38,11 +35,14 @@ months = {
     "November": "11",
     "December": "12"
 }
-
+st.title("Cost per Closing")
 # Create the select boxes
 selected_year = st.number_input("Select year", min_value=2020, max_value=pd.Timestamp.today().year, value=pd.Timestamp.today().year, step=1)
-selected_month = st.selectbox("Select month", options=list(months.keys()))
-
+top_select_month_options = list(months.keys())
+if int(selected_year) == pd.Timestamp.today().year:
+    for i in range(pd.Timestamp.today().month, 13): # This assumes that the current data is up to and including last month
+        top_select_month_options.remove(list(months.keys())[list(months.values()).index(("0" + str(i))[-2:])])
+selected_month = st.selectbox("Select month", options=top_select_month_options)
 # Convert selected month to numerical value
 selected_month_num = months[selected_month]
 
@@ -65,6 +65,7 @@ if purch or refi or renew:
         sql_DT = sql_DT + "'Renewal', "
     sql_DT = sql_DT[:-2] + ')'
 sql_DT = sql_DT + ' group by "YearMonth", "Lead Source"'
+
 
 try:
     data_DT = session.sql(sql_DT).to_pandas()
