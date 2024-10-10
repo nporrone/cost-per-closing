@@ -1,11 +1,13 @@
-import copy
 import datetime
+import streamlit as st
 import numpy as np
 import pandas as pd
+from snowflake.snowpark.context import get_active_session
 import plotly.express as px
 import plotly.graph_objects as go
-import streamlit as st
+import altair as alt
 import time
+import copy
 
 
 conn = st.connection("snowflake")
