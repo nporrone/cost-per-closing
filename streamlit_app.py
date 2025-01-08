@@ -22,7 +22,6 @@ def load_session():
 session = load_session()
 
 # Use an interactive slider to get user input
-
 months = {
     "January": "01",
     "February": "02",
@@ -39,12 +38,17 @@ months = {
 }
 st.title("Cost per Closing")
 # Create the select boxes
-selected_year = st.number_input("Select year", min_value=2020, max_value=pd.Timestamp.today().year, value=pd.Timestamp.today().year, step=1)
+if pd.Timestamp.today().month == 1:
+    max_year = pd.Timestamp.today().year - 1
+else:
+    max_year = pd.Timestamp.today().year
+selected_year = st.number_input("Select year", min_value=2020, max_value=max_year, value=max_year, step=1)
 top_select_month_options = list(months.keys())
 if int(selected_year) == pd.Timestamp.today().year:
     for i in range(pd.Timestamp.today().month, 13): # This assumes that the current data is up to and including last month
         top_select_month_options.remove(list(months.keys())[list(months.values()).index(("0" + str(i))[-2:])])
 selected_month = st.selectbox("Select month", options=top_select_month_options)
+
 # Convert selected month to numerical value
 selected_month_num = months[selected_month]
 
@@ -69,10 +73,12 @@ if purch or refi or renew:
 sql_DT = sql_DT + ' group by "YearMonth", "Lead Source"'
 
 
-try:
-    data_DT = session.sql(sql_DT).to_pandas()
-except:
-    data_DT = session.sql(sql_DT).to_pandas()   # This is to hopefully catch that weird data type casting issue
+# try:
+data_DT = session.sql(sql_DT).collect()
+# st.markdown(data_DT)
+data_DT = session.sql(sql_DT).to_pandas()
+# except:
+#     data_DT = session.sql(sql_DT).to_pandas()   # This is to hopefully catch that weird data type casting issue
 
 # Assuming the date column is named 'YearMonth' and has the format 'YYYY MM'
 data_DT['year'] = data_DT['YearMonth'].str[:4]
@@ -231,14 +237,14 @@ with right_col:
 begin_y, begin_mo, end_y, end_mo = st.columns(4)
 max_month = 12
 with begin_y:
-    start_year = begin_y.number_input('Start year', min_value=2020, max_value=pd.Timestamp.today().year, value=pd.Timestamp.today().year, step=1)
+    start_year = begin_y.number_input('Start year', min_value=2020, max_value=max_year, value=max_year, step=1)
 with begin_mo:
     start_month_options = list(months.keys())
     if int(start_year) == pd.Timestamp.today().year:
         start_month_options = start_month_options[:pd.Timestamp.today().month]
     start_month = begin_mo.selectbox("Start month", options=start_month_options, index=0)
 with end_y:
-    end_year = end_y.number_input('End year', min_value=int(start_year), max_value=pd.Timestamp.today().year, value=pd.Timestamp.today().year, step=1)
+    end_year = end_y.number_input('End year', min_value=int(start_year), max_value=max_year, value=max_year, step=1)
 with end_mo:
     end_month_options = list(months.keys())
     if int(end_year) == pd.Timestamp.today().year:
