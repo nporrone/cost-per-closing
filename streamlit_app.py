@@ -160,7 +160,6 @@ time.sleep(1)
 # Create a copy of the DataFrame to avoid modifying the original
 df_to_display = filtered_df.copy()
 df_to_display = df_to_display.drop(['year','month'], axis=1)
-st.dataframe(df_to_display)
 
 df_to_display.loc[len(df_to_display)] = ['(Net)',
                                      sum(df_to_display['Leads']),
