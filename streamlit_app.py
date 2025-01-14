@@ -160,6 +160,29 @@ time.sleep(1)
 # Create a copy of the DataFrame to avoid modifying the original
 df_to_display = filtered_df.copy()
 df_to_display = df_to_display.drop(['year','month'], axis=1)
+st.dataframe(df_to_display)
+
+df_to_display.loc[len(df_to_display)] = ['(Net)',
+                                     sum(df_to_display['Leads']),
+                                     sum(df_to_display['Allocations']),
+                                     sum(df_to_display['Credits']),
+                                     sum(df_to_display['Submissions']),
+                                     sum(df_to_display['Closings']),
+                                     sum(df_to_display['Expected Closings']),
+                                     sum(df_to_display['Cost ($)']),
+                                     sum(df_to_display['Cost ($)']) / sum(df_to_display['Leads']),
+                                     sum(df_to_display['Cost ($)']) / sum(df_to_display['Allocations']),
+                                     sum(df_to_display['Cost ($)']) / sum(df_to_display['Credits']),
+                                     sum(df_to_display['Cost ($)']) / sum(df_to_display['Submissions']),
+                                     sum(df_to_display['Cost ($)']) / sum(df_to_display['Closings']),
+                                     sum(df_to_display['Cost ($)']) / sum(df_to_display['Expected Closings']),
+                                     sum(df_to_display['Allocations']) / sum(df_to_display['Leads']),
+                                     sum(df_to_display['Credits']) / sum(df_to_display['Leads']),
+                                     sum(df_to_display['Submissions']) / sum(df_to_display['Leads']),
+                                     sum(df_to_display['Closings']) / sum(df_to_display['Leads']),
+                                     sum(df_to_display['Expected Closings']) / sum(df_to_display['Leads'])
+                                    ]
+
 df_to_display = df_to_display.set_index('Lead Source')
 
 cols_container = st.container()
@@ -168,6 +191,10 @@ if all_cols:
     focused_cols = cols_container.multiselect('Select columns:', list(df_to_display.columns), list(df_to_display.columns))
 else:
     focused_cols = cols_container.multiselect('Select columns:', list(df_to_display.columns))
+
+def net_row_formatter(x):
+    value = x.to_numpy()
+    return np.where(value >= 0, 'color: green', 'color: green') # Just need it to change colour, copied from smarter one below
 
 st.dataframe(df_to_display[focused_cols].style.format(
     {
@@ -183,7 +210,7 @@ st.dataframe(df_to_display[focused_cols].style.format(
         '% Lead to Submit (cohort)' : '{0:.2f}%',
         '% Lead to Close (cohort)' : '{0:.2f}%',
         '% Expected Lead to Close (cohort)' : '{0:.2f}%'
-    })
+    }).apply(net_row_formatter, axis=1, subset=(['(Net)'], focused_cols))
 )
 
 st.title("Cost per Unit - Focused")
