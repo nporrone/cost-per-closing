@@ -86,17 +86,17 @@ data_DT['month'] = data_DT['YearMonth'].str[5:7]
 data_DT.drop(columns=['YearMonth'], inplace=True)
 
 data_DT['Cost ($)'] = round(data_DT['Cost'])
-data_DT['Cost per Lead ($)'] = round(data_DT['Cost'] / data_DT['Leads'])
-data_DT['Cost per Allocation ($)'] = round(data_DT['Cost'] / data_DT['Allocations'])
-data_DT['Cost per Credit ($)'] = round(data_DT['Cost'] / data_DT['Credits'])
-data_DT['Cost per Submission ($)'] = round(data_DT['Cost'] / data_DT['Submissions'])
-data_DT['Cost per Closing ($)'] = round(data_DT['Cost'] / data_DT['Closings'])
-data_DT['Cost per Expected Closing ($)'] = round(data_DT['Cost'] / data_DT['Expected Closings'])
-data_DT['% Lead to Allocate (cohort)'] = round(data_DT['Allocations'] / data_DT['Leads'] * 100, 2)
-data_DT['% Lead to Credit (cohort)'] = round(data_DT['Credits'] / data_DT['Leads'] * 100, 2)
-data_DT['% Lead to Submit (cohort)'] = round(data_DT['Submissions'] / data_DT['Leads'] * 100, 2)
-data_DT['% Lead to Close (cohort)'] = round(data_DT['Closings'] / data_DT['Leads'] * 100, 2)
-data_DT['% Expected Lead to Close (cohort)'] = round(data_DT['Expected Closings'] / data_DT['Leads'] * 100, 2)
+data_DT['Cost per Lead ($)'] = round(data_DT['Cost'].div(data_DT['Leads']))
+data_DT['Cost per Allocation ($)'] = round(data_DT['Cost'].div(data_DT['Allocations']))
+data_DT['Cost per Credit ($)'] = round(data_DT['Cost'].div(data_DT['Credits']))
+data_DT['Cost per Submission ($)'] = round(data_DT['Cost'].div(data_DT['Submissions']))
+data_DT['Cost per Closing ($)'] = round(data_DT['Cost'].div(data_DT['Closings']))
+data_DT['Cost per Expected Closing ($)'] = round(data_DT['Cost'].div(data_DT['Expected Closings']))
+data_DT['% Lead to Allocate (cohort)'] = round(data_DT['Allocations'].div(data_DT['Leads']) * 100, 2)
+data_DT['% Lead to Credit (cohort)'] = round(data_DT['Credits'].div(data_DT['Leads']) * 100, 2)
+data_DT['% Lead to Submit (cohort)'] = round(data_DT['Submissions'].div(data_DT['Leads']) * 100, 2)
+data_DT['% Lead to Close (cohort)'] = round(data_DT['Closings'].div(data_DT['Leads']) * 100, 2)
+data_DT['% Expected Lead to Close (cohort)'] = round(data_DT['Expected Closings'].div(data_DT['Leads']) * 100, 2)
 
 data_DT.drop(columns=['Cost'], inplace=True)
 # data_DT = data_DT.fillna(0)
@@ -161,6 +161,11 @@ time.sleep(1)
 df_to_display = filtered_df.copy()
 df_to_display = df_to_display.drop(['year','month'], axis=1)
 
+def default_divide(a, b):
+    if b == 0:
+        return 0
+    return a / b
+
 df_to_display.loc[len(df_to_display)] = ['(Net)',
                                      sum(df_to_display['Leads']),
                                      sum(df_to_display['Allocations']),
@@ -169,17 +174,17 @@ df_to_display.loc[len(df_to_display)] = ['(Net)',
                                      sum(df_to_display['Closings']),
                                      sum(df_to_display['Expected Closings']),
                                      sum(df_to_display['Cost ($)']),
-                                     sum(df_to_display['Cost ($)']) / sum(df_to_display['Leads']),
-                                     sum(df_to_display['Cost ($)']) / sum(df_to_display['Allocations']),
-                                     sum(df_to_display['Cost ($)']) / sum(df_to_display['Credits']),
-                                     sum(df_to_display['Cost ($)']) / sum(df_to_display['Submissions']),
-                                     sum(df_to_display['Cost ($)']) / sum(df_to_display['Closings']),
-                                     sum(df_to_display['Cost ($)']) / sum(df_to_display['Expected Closings']),
-                                     sum(df_to_display['Allocations']) / sum(df_to_display['Leads']),
-                                     sum(df_to_display['Credits']) / sum(df_to_display['Leads']),
-                                     sum(df_to_display['Submissions']) / sum(df_to_display['Leads']),
-                                     sum(df_to_display['Closings']) / sum(df_to_display['Leads']),
-                                     sum(df_to_display['Expected Closings']) / sum(df_to_display['Leads'])
+                                     default_divide(sum(df_to_display['Cost ($)']), sum(df_to_display['Leads'])),
+                                     default_divide(sum(df_to_display['Cost ($)']), sum(df_to_display['Allocations'])),
+                                     default_divide(sum(df_to_display['Cost ($)']), sum(df_to_display['Credits'])),
+                                     default_divide(sum(df_to_display['Cost ($)']), sum(df_to_display['Submissions'])),
+                                     default_divide(sum(df_to_display['Cost ($)']), sum(df_to_display['Closings'])),
+                                     default_divide(sum(df_to_display['Cost ($)']), sum(df_to_display['Expected Closings'])),
+                                     default_divide(sum(df_to_display['Allocations']), sum(df_to_display['Leads'])),
+                                     default_divide(sum(df_to_display['Credits']), sum(df_to_display['Leads'])),
+                                     default_divide(sum(df_to_display['Submissions']), sum(df_to_display['Leads'])),
+                                     default_divide(sum(df_to_display['Closings']), sum(df_to_display['Leads'])),
+                                     default_divide(sum(df_to_display['Expected Closings']), sum(df_to_display['Leads']))
                                     ]
 
 df_to_display = df_to_display.set_index('Lead Source')
@@ -259,22 +264,26 @@ with right_col:
         lead_source_b = right_col.selectbox('Lead Source 2', options=source_options, index=source_options.index('Borrowell'))
     else:
         lead_source_b = right_col.selectbox('Lead Source 2', options=source_options, index=source_options.index('LowestRates'))
-    
+
 begin_y, begin_mo, end_y, end_mo = st.columns(4)
 max_month = 12
 with begin_y:
+    if pd.Timestamp.today().month < 3:
+        max_year = max_year - 1
     start_year = begin_y.number_input('Start year', min_value=2020, max_value=max_year, value=max_year, step=1)
 with begin_mo:
     start_month_options = list(months.keys())
     if int(start_year) == pd.Timestamp.today().year:
-        start_month_options = start_month_options[:pd.Timestamp.today().month]
+        start_month_options = start_month_options[:pd.Timestamp.today().month - 1]
     start_month = begin_mo.selectbox("Start month", options=start_month_options, index=0)
 with end_y:
+    if pd.Timestamp.today().month == 2:
+        max_year += 1
     end_year = end_y.number_input('End year', min_value=int(start_year), max_value=max_year, value=max_year, step=1)
 with end_mo:
     end_month_options = list(months.keys())
     if int(end_year) == pd.Timestamp.today().year:
-        end_month_options = end_month_options[:pd.Timestamp.today().month]
+        end_month_options = end_month_options[:pd.Timestamp.today().month - 1]
     if int(start_year) == int(end_year):
         end_month_options = end_month_options[start_month_options.index(str(start_month)):]
     end_month = end_mo.selectbox("End month", options=end_month_options, index=len(end_month_options) - 1)
